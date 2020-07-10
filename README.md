@@ -29,7 +29,7 @@
 - DDos Client
 
 ### Malware for Windows 10 and Linux:
-  (you have to adapt the script so that it works for your IP address)
+  (you have to adapt the script so that it works in your enemies computer)
   
 - Malware_Win10_Linux
 
